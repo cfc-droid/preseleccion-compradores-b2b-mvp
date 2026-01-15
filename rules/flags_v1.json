@@ -1,0 +1,90 @@
+{
+  "meta": {
+    "version": "v1.0.0",
+    "description": "Flags no decisorias. Se calculan solo si la fila pasó todos los gates.",
+    "scope": "post_gates_only"
+  },
+
+  "flags": [
+
+    {
+      "id": "FLAG_TEXTO_CORTO",
+      "description": "Texto demasiado corto para evaluar con confianza.",
+      "type": "min_length",
+      "min_chars": 120,
+      "apply_to_headers": [
+        "15/33. Contá brevemente tu experiencia comercial",
+        "21/33. ¿Qué significa cobrar solo por resultados?",
+        "22/33. ¿Qué responderías si alguien pregunta cuánto voy a ganar?",
+        "23/33. ¿Qué cosas NO dirías nunca al presentar este producto?",
+        "27/33. DM de presentación del producto",
+        "28/33. Post corto para redes",
+        "30/33. Acciones concretas primeros 7 días",
+        "31/33. ¿Por qué creés que sos apto?",
+        "33/33. Si en 30 días no generás ventas, ¿cómo lo interpretás?"
+      ]
+    },
+
+    {
+      "id": "FLAG_TEXTO_GENERICO",
+      "description": "Uso de lenguaje genérico sin elementos concretos.",
+      "type": "generic_words",
+      "generic_words_source": "generic_words.json",
+      "min_generic_matches": 2,
+      "apply_to_headers": [
+        "15/33. Contá brevemente tu experiencia comercial",
+        "21/33. ¿Qué significa cobrar solo por resultados?",
+        "22/33. ¿Qué responderías si alguien pregunta cuánto voy a ganar?",
+        "23/33. ¿Qué cosas NO dirías nunca al presentar este producto?",
+        "27/33. DM de presentación del producto",
+        "28/33. Post corto para redes",
+        "30/33. Acciones concretas primeros 7 días"
+      ]
+    },
+
+    {
+      "id": "FLAG_SIN_VERBOS",
+      "description": "Texto sin verbos de acción claros.",
+      "type": "missing_action_verbs",
+      "action_verbs_source": "action_verbs.json",
+      "apply_to_headers": [
+        "30/33. Acciones concretas primeros 7 días"
+      ]
+    },
+
+    {
+      "id": "FLAG_RIESGO_MARKETING",
+      "description": "Lenguaje de marketing riesgoso (no gate, solo advertencia).",
+      "type": "soft_marketing_words",
+      "soft_words": [
+        "ingresos",
+        "rentable",
+        "ganar",
+        "ganancias",
+        "dinero",
+        "facil",
+        "rapido",
+        "oportunidad",
+        "negocio seguro"
+      ],
+      "apply_to_headers": "all_text_fields"
+    },
+
+    {
+      "id": "FLAG_DATOS_INCONSISTENTES",
+      "description": "Datos de contacto o perfil con formato inconsistente.",
+      "type": "data_consistency",
+      "rules": [
+        {
+          "header": "9/33. Email de contacto (confirmación)",
+          "must_contain": "@"
+        },
+        {
+          "header": "11/33. Perfil de red social principal",
+          "must_contain_any": ["@", "http"]
+        }
+      ]
+    }
+
+  ]
+}

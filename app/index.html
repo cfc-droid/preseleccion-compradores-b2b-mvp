@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Preselección de Vendedores — MVP</title>
+
+  <style>
+    :root{
+      --bg:#0b0b0f;
+      --panel:#12121a;
+      --panel2:#0f0f16;
+      --text:#f2f2f2;
+      --muted:#b9b9c6;
+      --border:#2a2a3a;
+      --ok:#22c55e;
+      --rev:#fbbf24;
+      --bad:#ef4444;
+      --link:#7dd3fc;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 12px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      padding:24px;
+      font-family:var(--font);
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    h1{ margin:0 0 6px; font-size: 28px; }
+    p{ margin:0 0 16px; color:var(--muted); }
+
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .card{
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+
+    .row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    input[type="file"]{
+      color:var(--text);
+      background:transparent;
+      border:1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .pill{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.03);
+      color: var(--muted);
+      font-size: 13px;
+      user-select:none;
+    }
+
+    .pill strong{ color: var(--text); font-weight: 700; }
+
+    .btn{
+      cursor:pointer;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    .btn:hover{ background: rgba(255,255,255,0.06); }
+    .btn.active{ outline: 2px solid rgba(125, 211, 252, .35); border-color: rgba(125, 211, 252, .55); }
+
+    .tabs{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .table{
+      width:100%;
+      border-collapse: collapse;
+      overflow:hidden;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .table th, .table td{
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      vertical-align: top;
+    }
+    .table th{
+      text-align:left;
+      color: var(--muted);
+      font-weight: 700;
+      background: rgba(255,255,255,0.03);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .table tr:hover td{ background: rgba(255,255,255,0.03); }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+    }
+    .badge.ok{ color: var(--ok); border-color: rgba(34,197,94,.35); }
+    .badge.rev{ color: var(--rev); border-color: rgba(251,191,36,.35); }
+    .badge.bad{ color: var(--bad); border-color: rgba(239,68,68,.35); }
+
+    a{ color: var(--link); }
+
+    #detailPanel{
+      display:none;
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .muted{ color: var(--muted); }
+
+    .hint{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 900px){
+      .grid2{ grid-template-columns: 1fr; }
+    }
+
+    .miniCard{
+      border:1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .progressWrap{
+      width: 220px;
+      height: 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      overflow:hidden;
+      background: rgba(255,255,255,0.03);
+    }
+    .progressBar{
+      height: 100%;
+      background: rgba(125, 211, 252, .65);
+      width: 0%;
+    }
+
+    .sectionTitle{
+      font-weight: 800;
+      margin: 0 0 8px;
+      color: var(--text);
+    }
+
+    .list{
+      margin:0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+      padding: 2px 6px;
+      border:1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+    }
+
+    .rightTools{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .hidden{ display:none !important; }
+  </style>
+
+  <link rel="stylesheet" href="fixed_header.css" />
+</head>
+
+<body>
+  <div class="wrap">
+
+    <div class="card">
+      <h1>Preselección automática de colaboradores</h1>
+      <p>Subí el archivo <b>XLSX</b> exportado desde Google Forms / Google Sheets.</p>
+
+      <div class="row">
+        <input type="file" id="fileInput" accept=".xlsx" />
+        <div class="pill"><span>Estado:</span> <strong id="statusText">Esperando XLSX…</strong></div>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <div class="tabs" id="topTabs"></div>
+
+<div class="rightTools">
+  
+<button class="btn" id="btnExportXLSX" title="Exporta el cuadro de registros a XLSX (tiempo real)">Exportar XLSX</button>
+<button class="btn" id="btnClearHistory" title="Borra historial guardado en este navegador">Borrar historial</button>
+
+<!-- ✅ OCULTAR 3 OPCIONES DELICADAS (backups) -->
+<div id="backupTools">
+  <button class="btn" id="btnBackupSave" title="Guarda un snapshot en este navegador (slot local)">Guardar backup</button>
+  <button class="btn" id="btnBackupExport" title="Descarga un .json con el estado (dataset + historial + parte humana)">Exportar backup</button>
+  <button class="btn" id="btnBackupImport" title="Importa un .json y restaura el estado (sobrescribe)">Importar backup</button>
+
+  <input type="file" id="backupFileInput" accept="application/json" style="display:none;" />
+</div>
+      </div>
+
+      <div class="hint">
+        Guardado local: el historial se guarda en este navegador (localStorage). Si cambiás de PC/navegador, no aparece.
+      </div>
+    </div>
+
+    <!- Resumen ->
+    <div class="card" id="output"></div>
+
+    <!-- Filtros (solo en vista Resultados) -->
+    <div class="card" id="filters"></div>
+
+    <!-- Contenido por pestaña -->
+    <div class="card" id="viewResultados">
+
+      <!-- ✅ Encabezado fijo (toggle + sync scroll) -->
+      <div id="psvFixedHeaderWrap">
+        <div id="psvFixedHeaderBar">
+          <div id="psvFixedHeaderTopRow">
+            <div id="psvFixedHeaderTitle">ENCABEZADO FIJO (Resultados)</div>
+            <button class="btn" id="psvFixedHeaderToggle" type="button">Ocultar encabezado fijo</button>
+          </div>
+          <div id="psvFixedHeaderScroll">
+            <table id="psvFixedHeaderTable"></table>
+          </div>
+        </div>
+      </div>
+
+      <div id="resultsTable"></div>
+    </div>
+
+    <div class="card hidden" id="viewSeleccionados">
+      <div id="selectedView"></div>
+    </div>
+
+    <div class="card hidden" id="viewHistorial">
+      <div id="historyView"></div>
+    </div>
+
+    <!-- Detalle -->
+    <div class="card" id="detailPanel"></div>
+
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<script src="modules/storage.js"></script>
+<script src="modules/human.js"></script>
+<script src="modules/dedupe.js"></script>
+<script src="modules/export.js"></script>
+<script src="modules/export_xlsx.js"></script>
+<script src="modules/backup.js"></script>  
+
+<script src="fixed_header.js"></script>
+<script src="ui.js"></script>
+<script src="patch_detalle_v2.js"></script>  
+<script src="app.js"></script>
+
+</body>
+</html>

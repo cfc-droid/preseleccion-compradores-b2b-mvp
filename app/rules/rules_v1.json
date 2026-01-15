@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "version": "v1.1.0",
+    "input_columns_required": 35,
+    "description": "Reglas oficiales de gates y scoring. FASE A2 (gates) + FASE B (scoring completo)."
+  },
+  "states": {
+    "discarded": "DESCARTADO_AUTO",
+    "review": "REVISAR_AUTO"
+  },
+  "thresholds": {
+    "discard_max": 69,
+    "review_min": 70
+  },
+  "weights": {
+    "filtros": 25,
+    "experiencia": 15,
+    "canales": 20,
+    "comprension": 15,
+    "etica": 10,
+    "prueba": 15
+  },
+  "gates": [
+    {
+      "id": "G2",
+      "header": "2/33. ¿Aceptás cobrar solo por resultados (COMISIÓN)?",
+      "type": "equals",
+      "value": "No",
+      "reason": "Gate G2: No acepta comisión"
+    },
+    {
+      "id": "G3",
+      "header": "3/33. ¿Buscás empleo o sueldo?",
+      "type": "equals",
+      "value": "Sí",
+      "reason": "Gate G3: Busca empleo"
+    },
+    {
+      "id": "G6",
+      "header": "6/33. ¿Leíste completo el anuncio y la advertencia?",
+      "type": "equals",
+      "value": "No",
+      "reason": "Gate G6: No leyó advertencia"
+    },
+    {
+      "id": "G7",
+      "header": "7/33. Hotmart",
+      "type": "equals",
+      "value": "No, y no quiero usar Hotmart",
+      "reason": "Gate G7: Rechaza Hotmart"
+    },
+    {
+      "id": "G20",
+      "header": "20/33. ¿Cuál de estas prácticas NO harías nunca?",
+      "type": "equals",
+      "value": "Ninguna (no tengo límites)",
+      "reason": "Gate G20: Sin límites éticos"
+    },
+    {
+      "id": "G24",
+      "header": "24/33. Aceptación de reglas",
+      "type": "contains_all",
+      "value": [
+        "No promesas",
+        "No marketing agresivo",
+        "No señales",
+        "Producto educativo",
+        "No manipulación"
+      ],
+      "reason": "Gate G24: No acepta todas las reglas éticas"
+    }
+  ],
+  "banned_words_gate": {
+    "enabled": true,
+    "scope": "all_text_fields",
+    "words_source": "banned_words.json",
+    "reason": "Gate GBAN: Lenguaje prohibido"
+  },
+  "scoring": {
+    "filtros": [
+      {
+        "header": "2/33. ¿Aceptás cobrar solo por resultados (COMISIÓN)?",
+        "type": "map",
+        "points_map": {
+          "Sí": 1,
+          "SI": 1,
+          "Si": 1,
+          "sí": 1,
+          "si": 1,
+          "No": 0,
+          "NO": 0,
+          "no": 0
+        },
+        "points": 10
+      },
+      {
+        "header": "3/33. ¿Buscás empleo o sueldo?",
+        "type": "map",
+        "points_map": {
+          "No": 1,
+          "NO": 1,
+          "no": 1,
+          "Sí": 0,
+          "SI": 0,
+          "Si": 0,
+          "sí": 0,
+          "si": 0
+        },
+        "points": 10
+      },
+      {
+  "header": "4/33. Horas semanales reales",
+  "type": "map",
+  "points_map": {
+    "1-2": 0,
+    "1–2": 0,
+
+    "3-5": 1,
+    "3–5": 1,
+
+    "6-10": 1,
+    "6–10": 1,
+
+    "10+": 1
+        }
+      },
+      {
+  "header": "5/33. Conversaciones reales que podés iniciar en 7 días",
+  "type": "map",
+  "points_map": {
+    "0-5": 0,
+    "0–5": 0,
+
+    "6-15": 1,
+    "6–15": 1,
+
+    "16-30": 1,
+    "16–30": 1,
+
+    "30+": 1
+        }
+      },
+      {
+        "header": "6/33. ¿Leíste completo el anuncio y la advertencia?",
+        "type": "map",
+        "points_map": {
+          "Sí": 1,
+          "SI": 1,
+          "Si": 1,
+          "sí": 1,
+          "si": 1,
+          "No": 0,
+          "NO": 0,
+          "no": 0
+        },
+        "points": 5
+      },
+      {
+        "header": "7/33. Hotmart",
+        "type": "map",
+        "points_map": {
+          "Sí, ya tengo": 1,
+          "Si, ya tengo": 1,
+          "SI, ya tengo": 1,
+          "No, pero la puedo crear hoy": 1,
+          "NO, pero la puedo crear hoy": 1,
+          "No, y no quiero usar Hotmart": 0,
+          "NO, y no quiero usar Hotmart": 0
+        }
+      },
+      {
+        "header": "25/33. ¿Alguna vez hiciste spam o te reportaron?",
+        "type": "map",
+        "points_map": {
+          "NO": 1,
+          "No": 1,
+          "no": 1,
+          "Sí": 0,
+          "Si": 0,
+          "SI": 0,
+          "sí": 0,
+          "si": 0,
+          "SÍ": 0
+        }
+      }
+    ],
+    "experiencia": [
+      {
+        "header": "12/33. ¿Vendiste productos digitales o educativos antes?",
+        "type": "map",
+        "points_map": {
+          "Sí": 1,
+          "SI": 1,
+          "Si": 1,
+          "sí": 1,
+          "si": 1,
+          "No": 0,
+          "NO": 0,
+          "no": 0
+        },
+        "points": 10
+      },
+      {
+        "header": "15/33. Contá brevemente tu experiencia comercial",
+        "type": "min_length",
+        "min_chars": 150,
+        "points": 5
+      }
+    ],
+    "canales": {
+      "cap": 20,
+      "rules": [
+        {
+          "header": "18/33. Listá 3 lugares concretos donde podrías difundir",
+          "type": "min_lines",
+          "min_lines": 3,
+          "min_chars_per_line": 8,
+          "points": 10
+        },
+        {
+          "header": "17/33. Tamaño aproximado",
+          "type": "map",
+          "points_map": {
+            "0": 0,
+            "1–500": 0,
+            "501–2.000": 2,
+            "2.001–10.000": 4,
+            "10.001–50.000": 5,
+            "50.000+": 5
+          }
+        },
+        {
+  "header": "19/33. ¿Tenés base de contactos?",
+  "type": "map",
+  "points_map": {
+    "0": 0,
+
+    "1-50": 0,
+    "1–50": 0,
+
+    "51-200": 2,
+    "51–200": 2,
+
+    "201-1.000": 4,
+    "201–1.000": 4,
+
+    "1.000+": 5
+          }
+        }
+      ]
+    },
+    "comprension": [
+      {
+        "header": "21/33. ¿Qué significa cobrar solo por resultados?",
+        "type": "min_length",
+        "min_chars": 120,
+        "points": 5
+      },
+      {
+        "header": "22/33. ¿Qué responderías si alguien pregunta cuánto voy a ganar?",
+        "type": "min_length",
+        "min_chars": 120,
+        "points": 5
+      },
+      {
+        "header": "23/33. ¿Qué cosas NO dirías nunca al presentar este producto?",
+        "type": "min_length",
+        "min_chars": 120,
+        "points": 5
+      }
+    ],
+    "etica": [
+      {
+        "header": "24/33. Aceptación de reglas",
+        "type": "contains_all",
+        "value": [
+          "No promesas",
+          "No marketing agresivo",
+          "No señales",
+          "Producto educativo",
+          "No manipulación"
+        ],
+        "points": 10
+      }
+    ],
+    "prueba": [
+      {
+        "header": "27/33. DM de presentación del producto",
+        "type": "min_length_with_action",
+        "min_chars": 120,
+        "points": 5
+      },
+      {
+        "header": "28/33. Post corto para redes",
+        "type": "min_length_with_action",
+        "min_chars": 120,
+        "points": 5
+      },
+      {
+        "header": "30/33. Acciones concretas primeros 7 días",
+        "type": "min_length_with_action",
+        "min_chars": 120,
+        "points": 5
+      }
+    ]
+  }
+}
