@@ -193,39 +193,27 @@ window.UI = (() => {
   const EXPECTED_HEADERS_UI = [
     "Marca temporal",
     "Dirección de correo electrónico",
-    "1/33. Escribí esta frase y agregá tu @usuario principal + ciudad:",
-    "2/33. ¿Aceptás cobrar solo por resultados (COMISIÓN)?",
-    "3/33. ¿Buscás empleo o sueldo?",
-    "4/33. Horas semanales reales",
-    "5/33. Conversaciones reales que podés iniciar en 7 días",
-    "6/33. ¿Leíste completo el anuncio y la advertencia?",
-    "7/33. Hotmart",
-    "8/33. Nombre y apellido",
-    "9/33. Email de contacto (confirmación)",
-    "10/33. País / zona horaria",
-    "11/33. Perfil de red social principal",
-    "12/33. ¿Vendiste productos digitales o educativos antes?",
-    "13/33. ¿Qué vendiste?",
-    "14/33. ¿Cómo vendías?",
-    "15/33. Contá brevemente tu experiencia comercial",
-    "16/33. ¿Tenés comunidad propia?",
-    "17/33. Tamaño aproximado",
-    "18/33. Listá 3 lugares concretos donde podrías difundir",
-    "19/33. ¿Tenés base de contactos?",
-    "20/33. ¿Cuál de estas prácticas NO harías nunca?",
-    "21/33. ¿Qué significa cobrar solo por resultados?",
-    "22/33. ¿Qué responderías si alguien pregunta cuánto voy a ganar?",
-    "23/33. ¿Qué cosas NO dirías nunca al presentar este producto?",
-    "24/33. Aceptación de reglas",
-    "25/33. ¿Alguna vez hiciste spam o te reportaron?",
-    "26/33. Explicá qué pasó y qué aprendiste",
-    "27/33. DM de presentación del producto",
-    "28/33. Post corto para redes",
-    "29/33. ¿A qué tipo de cliente apuntarías?",
-    "30/33. Acciones concretas primeros 7 días",
-    "31/33. ¿Por qué creés que sos apto?",
-    "32/33. Comentarios finales",
-    "33/33. Si en 30 días no generás ventas, ¿cómo lo interpretás?"
+    "1/21. Escribí esta frase y agregá tu @usuario principal + ciudad:",
+    "2/21. Cargo / rol dentro de la institución",
+    "3/21. Nombre y apellido",
+    "4/21. Email de contacto (confirmación)",
+    "5/21. WhatsApp (con código de país)",
+    "6/21. País / zona horaria",
+    "7/21. Nombre de la institución / proyecto: Nombre comercial o institucional bajo el cual opera el proyecto",
+    "8/21. Web / sitio (si aplica)",
+    "9/21. Redes principales: Pegá los links de las redes activas (Instagram, YouTube, TikTok, LinkedIn, etc.). Al menos una red es obligatoria.",
+    "10/21. Rubro / temática principal",
+    "11/21. Tamaño aproximado de la comunidad / alumnos",
+    "12/21. ¿Qué están vendiendo actualmente?",
+    "13/21. Ticket promedio aproximado (USD o moneda local)",
+    "14/21. Modalidad actual del programa (grabado / vivo / mixto)",
+    "15/21. Duración del programa",
+    "16/21. Perfil del alumno al que está dirigido el programa",
+    "17/21. ACEPTACIÓN DE CONDICIONES - Confirmo expresamente que:",
+    "18/21. Pack adquirido",
+    "19/21. Comentarios finales",
+    "20/21. ¿Cómo conociste el Campus CFC LITE V41?",
+    "21/21. La aceptación del DUV es condición obligatoria para la evaluación y eventual activación de las licencias."
   ];
 
   function canonHeader(h) {
@@ -236,7 +224,7 @@ window.UI = (() => {
   }
 
   function headerNumber(h) {
-    const m = canonHeader(h).match(/^(\d+)\/33\./);
+    const m = canonHeader(h).match(/^(\d+)\/\d+\./);
     return m ? m[1] : null;
   }
 
@@ -251,7 +239,7 @@ window.UI = (() => {
 
   function questionTextFromHeader(h) {
     const s = canonHeader(h);
-    return s.replace(/^\d+\/33\.\s*/, "");
+    return s.replace(/^\d+\/\d+\.\s*/, "");
   }
 
   function safeVal(v) {
@@ -262,8 +250,8 @@ window.UI = (() => {
   function getQLists() {
     // Preferimos las listas oficiales desde HumanPSV si existen
     const hasHuman = (window.HumanPSV && Array.isArray(HumanPSV.Q_ALTA) && Array.isArray(HumanPSV.Q_INFO));
-    const Q_ALTA = hasHuman ? HumanPSV.Q_ALTA : ["Q1","Q9","Q13","Q14","Q15","Q18","Q21","Q22","Q23","Q27","Q30","Q31"];
-    const Q_INFO = hasHuman ? HumanPSV.Q_INFO : ["Q8","Q10","Q11","Q26","Q28","Q29","Q32","Q33"];
+    const Q_ALTA = hasHuman ? HumanPSV.Q_ALTA : ["Q1","Q8","Q9","Q16","Q19"];
+    const Q_INFO = hasHuman ? HumanPSV.Q_INFO : ["Q3","Q4","Q5","Q10","Q11","Q12","Q20","Q21"];
     return { Q_ALTA, Q_INFO };
   }
 
@@ -271,7 +259,7 @@ window.UI = (() => {
   // PARTE 2/3 — CERRADAS FIJAS (NO varía cantidad)
   // ======================================================
 
-  const Q_CERRADAS_FIXED = ["Q2","Q3","Q4","Q5","Q6","Q7","Q12","Q16","Q17","Q19","Q20","Q24","Q25"];
+  const Q_CERRADAS_FIXED = ["Q2","Q6","Q7","Q10","Q11","Q12","Q13","Q14","Q15","Q17","Q18","Q20","Q21"];
 
   // ======================================================
   // Carga de reglas (SOLO LECTURA desde UI) para evaluar cerradas fijas
@@ -459,7 +447,7 @@ window.UI = (() => {
     const { Q_ALTA, Q_INFO } = getQLists();
 
     const allQ = [];
-    for (let i = 1; i <= 33; i++) allQ.push(`Q${i}`);
+    for (let i = 1; i <= 21; i++) allQ.push(`Q${i}`);
 
     const setAlta = new Set(Q_ALTA);
     const setInfo = new Set(Q_INFO);
@@ -1196,7 +1184,7 @@ tableWrap.querySelectorAll('button[data-sentmail]').forEach(btn => {
       const pend = r.pendiente_humano ? "SÍ" : "NO";
 
       const okEmail = (r.email || "").includes("@");
-      const social = (r.rowRaw?.["11/33. Perfil de red social principal"] || "");
+      const social = (r.rowRaw?.["9/21. Redes principales: Pegá los links de las redes activas (Instagram, YouTube, TikTok, LinkedIn, etc.). Al menos una red es obligatoria."] || "");
       const okSocial = /(http|@)/.test(social);
 
       const p13 = getP13Def(r);
