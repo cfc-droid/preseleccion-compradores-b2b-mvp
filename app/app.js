@@ -17,39 +17,27 @@
 const EXPECTED_HEADERS = [
   "Marca temporal",
   "Dirección de correo electrónico",
-  "1/33. Escribí esta frase y agregá tu @usuario principal + ciudad:",
-  "2/33. ¿Aceptás cobrar solo por resultados (COMISIÓN)?",
-  "3/33. ¿Buscás empleo o sueldo?",
-  "4/33. Horas semanales reales",
-  "5/33. Conversaciones reales que podés iniciar en 7 días",
-  "6/33. ¿Leíste completo el anuncio y la advertencia?",
-  "7/33. Hotmart",
-  "8/33. Nombre y apellido",
-  "9/33. Email de contacto (confirmación)",
-  "10/33. País / zona horaria",
-  "11/33. Perfil de red social principal",
-  "12/33. ¿Vendiste productos digitales o educativos antes?",
-  "13/33. ¿Qué vendiste?",
-  "14/33. ¿Cómo vendías?",
-  "15/33. Contá brevemente tu experiencia comercial",
-  "16/33. ¿Tenés comunidad propia?",
-  "17/33. Tamaño aproximado",
-  "18/33. Listá 3 lugares concretos donde podrías difundir",
-  "19/33. ¿Tenés base de contactos?",
-  "20/33. ¿Cuál de estas prácticas NO harías nunca?",
-  "21/33. ¿Qué significa cobrar solo por resultados?",
-  "22/33. ¿Qué responderías si alguien pregunta cuánto voy a ganar?",
-  "23/33. ¿Qué cosas NO dirías nunca al presentar este producto?",
-  "24/33. Aceptación de reglas",
-  "25/33. ¿Alguna vez hiciste spam o te reportaron?",
-  "26/33. Explicá qué pasó y qué aprendiste",
-  "27/33. DM de presentación del producto",
-  "28/33. Post corto para redes",
-  "29/33. ¿A qué tipo de cliente apuntarías?",
-  "30/33. Acciones concretas primeros 7 días",
-  "31/33. ¿Por qué creés que sos apto?",
-  "32/33. Comentarios finales",
-  "33/33. Si en 30 días no generás ventas, ¿cómo lo interpretás?"
+  "1/21. Escribí esta frase y agregá tu @usuario principal + ciudad:",
+  "2/21. Cargo / rol dentro de la institución",
+  "3/21. Nombre y apellido",
+  "4/21. Email de contacto (confirmación)",
+  "5/21. WhatsApp (con código de país)",
+  "6/21. País / zona horaria",
+  "7/21. Nombre de la institución / proyecto: Nombre comercial o institucional bajo el cual opera el proyecto",
+  "8/21. Web / sitio (si aplica)",
+  "9/21. Redes principales: Pegá los links de las redes activas (Instagram, YouTube, TikTok, LinkedIn, etc.). Al menos una red es obligatoria.",
+  "10/21. Rubro / temática principal",
+  "11/21. Tamaño aproximado de la comunidad / alumnos",
+  "12/21. ¿Qué están vendiendo actualmente?",
+  "13/21. Ticket promedio aproximado (USD o moneda local)",
+  "14/21. Modalidad actual del programa (grabado / vivo / mixto)",
+  "15/21. Duración del programa",
+  "16/21. Perfil del alumno al que está dirigido el programa",
+  "17/21. ACEPTACIÓN DE CONDICIONES - Confirmo expresamente que:",
+  "18/21. Pack adquirido",
+  "19/21. Comentarios finales",
+  "20/21. ¿Cómo conociste el Campus CFC LITE V41?",
+  "21/21. La aceptación del DUV es condición obligatoria para la evaluación y eventual activación de las licencias."
 ];
 
 
@@ -78,7 +66,8 @@ function canonHeader(h) {
 }
 
 function headerNumber(h) {
-  const m = canonHeader(h).match(/^(\d+)\/33\./);
+  // ✅ CORREGIDO: ya NO hardcodea /33
+  const m = canonHeader(h).match(/^(\d+)\/\d+\./);
   return m ? m[1] : null;
 }
 
@@ -128,28 +117,30 @@ function safeStr(v) {
 // ======================================================
 
 const Q_CERRADAS_HEADERS = [
-  "2/33. ¿Aceptás cobrar solo por resultados (COMISIÓN)?",
-  "3/33. ¿Buscás empleo o sueldo?",
-  "4/33. Horas semanales reales",
-  "5/33. Conversaciones reales que podés iniciar en 7 días",
-  "6/33. ¿Leíste completo el anuncio y la advertencia?",
-  "7/33. Hotmart",
-  "12/33. ¿Vendiste productos digitales o educativos antes?",
-  "16/33. ¿Tenés comunidad propia?",
-  "17/33. Tamaño aproximado",
-  "19/33. ¿Tenés base de contactos?",
-  "20/33. ¿Cuál de estas prácticas NO harías nunca?",
-  "24/33. Aceptación de reglas",
-  "25/33. ¿Alguna vez hiciste spam o te reportaron?"
+  "2/21. Cargo / rol dentro de la institución",
+  "6/21. País / zona horaria",
+  "7/21. Nombre de la institución / proyecto: Nombre comercial o institucional bajo el cual opera el proyecto",
+  "9/21. Redes principales: Pegá los links de las redes activas (Instagram, YouTube, TikTok, LinkedIn, etc.). Al menos una red es obligatoria.",
+  "11/21. Tamaño aproximado de la comunidad / alumnos",
+  "12/21. ¿Qué están vendiendo actualmente?",
+  "14/21. Modalidad actual del programa (grabado / vivo / mixto)",
+  "15/21. Duración del programa",
+  "16/21. Perfil del alumno al que está dirigido el programa",
+  "17/21. ACEPTACIÓN DE CONDICIONES - Confirmo expresamente que:",
+  "18/21. Pack adquirido",
+  "20/21. ¿Cómo conociste el Campus CFC LITE V41?",
+  "21/21. La aceptación del DUV es condición obligatoria para la evaluación y eventual activación de las licencias."
 ];
 
 function qidFromHeader33(header) {
-  const m = String(header || "").match(/^(\d+)\/33\./);
+  // ✅ CORREGIDO: ya NO hardcodea /33
+  const m = String(header || "").match(/^(\d+)\/\d+\./);
   return m ? `Q${m[1]}` : "";
 }
 
 function questionTextFromHeader33(header) {
-  return String(header || "").replace(/^\d+\/33\.\s*/, "").trim();
+  // ✅ CORREGIDO: ya NO hardcodea /33
+  return String(header || "").replace(/^\d+\/\d+\.\s*/, "").trim();
 }
 
 // Gate por header (si existe)
@@ -232,7 +223,8 @@ function evalClosedOk(header, answer) {
 
 // Armado de closed_eval (datos “fuente” para patch)
 function buildClosedEval(rowObj) {
-  const pctWeight = 100 / 13; // 7.6923...
+  const n = Q_CERRADAS_HEADERS.length; // ✅ CORREGIDO: ya NO hardcodea 13
+  const pctWeight = n > 0 ? (100 / n) : 0;
 
   const detalle = Q_CERRADAS_HEADERS.map(h => {
     const ans = rowObj[h] ?? "";
@@ -252,10 +244,10 @@ function buildClosedEval(rowObj) {
     };
   });
 
-  const total = detalle.length; // 13
+  const total = detalle.length;
   const ok_count = detalle.filter(d => d.is_ok).length;
   const bad_count = total - ok_count;
-  const pct_ok = Math.round((ok_count / total) * 100);
+  const pct_ok = total > 0 ? Math.round((ok_count / total) * 100) : 0;
 
   return { total, ok_count, bad_count, pct_ok, detalle };
 }
@@ -482,15 +474,9 @@ function applyScoringWithExplain(row) {
 // ======================================================
 
 const FLAG_FIELDS = [
-  "15/33. Contá brevemente tu experiencia comercial",
-  "21/33. ¿Qué significa cobrar solo por resultados?",
-  "22/33. ¿Qué responderías si alguien pregunta cuánto voy a ganar?",
-  "23/33. ¿Qué cosas NO dirías nunca al presentar este producto?",
-  "27/33. DM de presentación del producto",
-  "28/33. Post corto para redes",
-  "30/33. Acciones concretas primeros 7 días",
-  "31/33. ¿Por qué creés que sos apto?",
-  "33/33. Si en 30 días no generás ventas, ¿cómo lo interpretás?"
+  "7/21. Nombre de la institución / proyecto: Nombre comercial o institucional bajo el cual opera el proyecto",
+  "9/21. Redes principales: Pegá los links de las redes activas (Instagram, YouTube, TikTok, LinkedIn, etc.). Al menos una red es obligatoria.",
+  "19/21. Comentarios finales"
 ];
 
 function applyFlags(row) {
@@ -498,14 +484,14 @@ function applyFlags(row) {
 
   for (const h of FLAG_FIELDS) {
     const v = row[h] || "";
-    if (safeStr(v).length < 120) flags.push("FLAG_TEXTO_CORTO");
+    if (safeStr(v).length < 40) flags.push("FLAG_TEXTO_CORTO");
     if (isGeneric(v)) flags.push("FLAG_TEXTO_GENERICO");
     if (!hasActionVerb(v)) flags.push("FLAG_SIN_VERBOS");
     if (/ingres|ganar|rentab|facil|garant/i.test(safeStr(v))) flags.push("FLAG_RIESGO_MARKETING");
   }
 
-  if (!safeStr(row["9/33. Email de contacto (confirmación)"]).includes("@") ||
-      !/(http|@)/.test(safeStr(row["11/33. Perfil de red social principal"]))) {
+  if (!safeStr(row["4/21. Email de contacto (confirmación)"]).includes("@") ||
+      !/(http|@)/.test(safeStr(row["9/21. Redes principales: Pegá los links de las redes activas (Instagram, YouTube, TikTok, LinkedIn, etc.). Al menos una red es obligatoria."]))) {
     flags.push("FLAG_DATOS_INCONSISTENTES");
   }
 
@@ -625,8 +611,8 @@ fileInput.addEventListener("change", async () => {
         obj[eh] = (idx !== undefined) ? (row[idx] ?? "") : "";
       }
 
-      const nombre = obj["8/33. Nombre y apellido"] || "";
-      const email = obj["9/33. Email de contacto (confirmación)"] || "";
+      const nombre = obj["3/21. Nombre y apellido"] || "";
+      const email = obj["4/21. Email de contacto (confirmación)"] || "";
 
       // DEBUG: gates+scoring siguen existiendo para auditoría (no deciden estado)
       const gate = applyGatesWithExplain(obj);
@@ -637,14 +623,14 @@ fileInput.addEventListener("change", async () => {
       const correctAll = gate.failed ? [...gate.correct] : [...gate.correct, ...sc.correct];
       const incorrectAll = gate.failed ? [...gate.incorrect] : [...gate.incorrect, ...sc.incorrect];
 
-      // ÍNDICE 12: closed_eval siempre desde 13 cerradas
+      // ÍNDICE 12: closed_eval desde cerradas
       const closed_eval = buildClosedEval(obj);
 
       // ESTADO IA: solo 2 estados
       const estado_ia = (closed_eval.pct_ok >= 70) ? "REVISAR_AUTO" : "DESCARTADO_AUTO";
 
       // Motivo alineado a Parte 2/3
-      const motivo = `Parte 2/3: ${closed_eval.pct_ok}% (válidas ${closed_eval.ok_count}/13)`;
+      const motivo = `Parte 2/3: ${closed_eval.pct_ok}% (válidas ${closed_eval.ok_count}/${closed_eval.total})`;
 
       // CLAVE: Para que la TABLA PRINCIPAL muestre el % correcto en "Total",
       // usamos score=maxScore como (pct_ok/100).
