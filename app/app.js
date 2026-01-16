@@ -17,27 +17,30 @@
 const EXPECTED_HEADERS = [
   "Marca temporal",
   "Dirección de correo electrónico",
-  "1/21. Escribí esta frase y agregá tu @usuario principal + ciudad:",
+
+  "1/21. Nombre y apellido del responsable institucional",
   "2/21. Cargo / rol dentro de la institución",
-  "3/21. Nombre y apellido",
-  "4/21. Email de contacto (confirmación)",
-  "5/21. WhatsApp (con código de país)",
+  "3/21. Email principal de contacto",
+  "4/21. Email usado en la compra (Hotmart)",
+  "5/21. WhatsApp (opcional, emergencias técnicas)",
   "6/21. País / zona horaria",
   "7/21. Nombre de la institución / proyecto: Nombre comercial o institucional bajo el cual opera el proyecto",
-  "8/21. Web / sitio (si aplica)",
-  "9/21. Redes principales: Pegá los links de las redes activas (Instagram, YouTube, TikTok, LinkedIn, etc.). Al menos una red es obligatoria.",
-  "10/21. Rubro / temática principal",
+
+  "8/21. Website o landing principal: Si no tiene web, deje este campo vacío y complete las redes sociales en la siguiente pregunta",
+  "9/21. Redes principales: Pegá los links de las redes activas (Instagram, YouTube, TikTok, LinkedIn, etc.). Al menos una red es obligatoria. Si no contás con web, este campo es obligatorio",
+  "10/21. Antiguedad del proyecto: Mes y año aproximado de inicio o exacta (ejemplo: 03/2022)",
+
   "11/21. Tamaño aproximado de la comunidad / alumnos",
   "12/21. ¿Qué están vendiendo actualmente?",
-  "13/21. Ticket promedio aproximado (USD o moneda local)",
-  "14/21. Modalidad actual del programa (grabado / vivo / mixto)",
+  "13/21. Link a la página de venta, temario o presentación del programa: Si no existe una página pública, podés dejarlo vacio o compartir un PDF, Notion o Google Doc.",
+  "14/21. Fecha de inicio de la cohorte o edición vigente: Fecha real o estimada (ej: 15/04/2026)",
   "15/21. Duración del programa",
   "16/21. Perfil del alumno al que está dirigido el programa",
-  "17/21. ACEPTACIÓN DE CONDICIONES - Confirmo expresamente que:",
+  "17/21. ACEPTACIÓN DE CONDICIONES  - Confirmo expresamente que:",
   "18/21. Pack adquirido",
-  "19/21. Comentarios finales",
+  "19/21. Fecha objetivo de entrega de credenciales",
   "20/21. ¿Cómo conociste el Campus CFC LITE V41?",
-  "21/21. La aceptación del DUV es condición obligatoria para la evaluación y eventual activación de las licencias."
+  "21/21. La aceptación del DUV es condición obligatoria para la evaluación y eventual activación de las licencias. Si no aceptás el DUV, no se inicia el proceso."
 ];
 
 
@@ -66,8 +69,7 @@ function canonHeader(h) {
 }
 
 function headerNumber(h) {
-  // ✅ CORREGIDO: ya NO hardcodea /33
-  const m = canonHeader(h).match(/^(\d+)\/\d+\./);
+  const m = canonHeader(h).match(/^(\d+)\/21\./);
   return m ? m[1] : null;
 }
 
@@ -111,36 +113,30 @@ function safeStr(v) {
 
 
 // ======================================================
-// ÍNDICE 12 — PARTE 2/3 (CERRADAS) = 13 preguntas fijas
-// - ESTADO (panel principal) sale SOLO de estas 13 (pct_ok)
+// ÍNDICE 12 — PARTE 2/3 (CERRADAS) = 9 preguntas fijas (B2B)
+// - ESTADO (panel principal) sale SOLO de estas 9 (pct_ok)
 // - Estados permitidos: DESCARTADO_AUTO (<=69) / REVISAR_AUTO (>=70)
 // ======================================================
 
 const Q_CERRADAS_HEADERS = [
   "2/21. Cargo / rol dentro de la institución",
-  "6/21. País / zona horaria",
-  "7/21. Nombre de la institución / proyecto: Nombre comercial o institucional bajo el cual opera el proyecto",
-  "9/21. Redes principales: Pegá los links de las redes activas (Instagram, YouTube, TikTok, LinkedIn, etc.). Al menos una red es obligatoria.",
   "11/21. Tamaño aproximado de la comunidad / alumnos",
   "12/21. ¿Qué están vendiendo actualmente?",
-  "14/21. Modalidad actual del programa (grabado / vivo / mixto)",
   "15/21. Duración del programa",
   "16/21. Perfil del alumno al que está dirigido el programa",
-  "17/21. ACEPTACIÓN DE CONDICIONES - Confirmo expresamente que:",
+  "17/21. ACEPTACIÓN DE CONDICIONES  - Confirmo expresamente que:",
   "18/21. Pack adquirido",
   "20/21. ¿Cómo conociste el Campus CFC LITE V41?",
-  "21/21. La aceptación del DUV es condición obligatoria para la evaluación y eventual activación de las licencias."
+  "21/21. La aceptación del DUV es condición obligatoria para la evaluación y eventual activación de las licencias. Si no aceptás el DUV, no se inicia el proceso."
 ];
 
 function qidFromHeader33(header) {
-  // ✅ CORREGIDO: ya NO hardcodea /33
-  const m = String(header || "").match(/^(\d+)\/\d+\./);
+  const m = String(header || "").match(/^(\d+)\/21\./);
   return m ? `Q${m[1]}` : "";
 }
 
 function questionTextFromHeader33(header) {
-  // ✅ CORREGIDO: ya NO hardcodea /33
-  return String(header || "").replace(/^\d+\/\d+\.\s*/, "").trim();
+  return String(header || "").replace(/^\d+\/21\.\s*/, "").trim();
 }
 
 // Gate por header (si existe)
@@ -168,7 +164,7 @@ function getScoringRuleByHeader(header) {
   return null;
 }
 
-// Eval SOLO para Parte 2/3 (13 cerradas)
+// Eval SOLO para Parte 2/3 (cerradas)
 function evalClosedOk(header, answer) {
   const a = safeStr(answer).trim();
   if (!a) return { hasAnswer: false, isOk: false, whyCore: "" };
@@ -223,8 +219,7 @@ function evalClosedOk(header, answer) {
 
 // Armado de closed_eval (datos “fuente” para patch)
 function buildClosedEval(rowObj) {
-  const n = Q_CERRADAS_HEADERS.length; // ✅ CORREGIDO: ya NO hardcodea 13
-  const pctWeight = n > 0 ? (100 / n) : 0;
+  const pctWeight = 100 / Q_CERRADAS_HEADERS.length;
 
   const detalle = Q_CERRADAS_HEADERS.map(h => {
     const ans = rowObj[h] ?? "";
@@ -247,7 +242,7 @@ function buildClosedEval(rowObj) {
   const total = detalle.length;
   const ok_count = detalle.filter(d => d.is_ok).length;
   const bad_count = total - ok_count;
-  const pct_ok = total > 0 ? Math.round((ok_count / total) * 100) : 0;
+  const pct_ok = Math.round((ok_count / total) * 100);
 
   return { total, ok_count, bad_count, pct_ok, detalle };
 }
@@ -474,9 +469,12 @@ function applyScoringWithExplain(row) {
 // ======================================================
 
 const FLAG_FIELDS = [
-  "7/21. Nombre de la institución / proyecto: Nombre comercial o institucional bajo el cual opera el proyecto",
-  "9/21. Redes principales: Pegá los links de las redes activas (Instagram, YouTube, TikTok, LinkedIn, etc.). Al menos una red es obligatoria.",
-  "19/21. Comentarios finales"
+  "8/21. Website o landing principal: Si no tiene web, deje este campo vacío y complete las redes sociales en la siguiente pregunta",
+  "9/21. Redes principales: Pegá los links de las redes activas (Instagram, YouTube, TikTok, LinkedIn, etc.). Al menos una red es obligatoria. Si no contás con web, este campo es obligatorio",
+  "10/21. Antiguedad del proyecto: Mes y año aproximado de inicio o exacta (ejemplo: 03/2022)",
+  "13/21. Link a la página de venta, temario o presentación del programa: Si no existe una página pública, podés dejarlo vacio o compartir un PDF, Notion o Google Doc.",
+  "14/21. Fecha de inicio de la cohorte o edición vigente: Fecha real o estimada (ej: 15/04/2026)",
+  "19/21. Fecha objetivo de entrega de credenciales"
 ];
 
 function applyFlags(row) {
@@ -484,14 +482,14 @@ function applyFlags(row) {
 
   for (const h of FLAG_FIELDS) {
     const v = row[h] || "";
-    if (safeStr(v).length < 40) flags.push("FLAG_TEXTO_CORTO");
+    if (safeStr(v).length < 120) flags.push("FLAG_TEXTO_CORTO");
     if (isGeneric(v)) flags.push("FLAG_TEXTO_GENERICO");
     if (!hasActionVerb(v)) flags.push("FLAG_SIN_VERBOS");
     if (/ingres|ganar|rentab|facil|garant/i.test(safeStr(v))) flags.push("FLAG_RIESGO_MARKETING");
   }
 
-  if (!safeStr(row["4/21. Email de contacto (confirmación)"]).includes("@") ||
-      !/(http|@)/.test(safeStr(row["9/21. Redes principales: Pegá los links de las redes activas (Instagram, YouTube, TikTok, LinkedIn, etc.). Al menos una red es obligatoria."]))) {
+  if (!safeStr(row["3/21. Email principal de contacto"]).includes("@") ||
+      !/(http|@)/.test(safeStr(row["9/21. Redes principales: Pegá los links de las redes activas (Instagram, YouTube, TikTok, LinkedIn, etc.). Al menos una red es obligatoria. Si no contás con web, este campo es obligatorio"]))) {
     flags.push("FLAG_DATOS_INCONSISTENTES");
   }
 
@@ -611,8 +609,8 @@ fileInput.addEventListener("change", async () => {
         obj[eh] = (idx !== undefined) ? (row[idx] ?? "") : "";
       }
 
-      const nombre = obj["3/21. Nombre y apellido"] || "";
-      const email = obj["4/21. Email de contacto (confirmación)"] || "";
+      const nombre = obj["1/21. Nombre y apellido del responsable institucional"] || "";
+      const email = obj["3/21. Email principal de contacto"] || "";
 
       // DEBUG: gates+scoring siguen existiendo para auditoría (no deciden estado)
       const gate = applyGatesWithExplain(obj);
@@ -623,7 +621,7 @@ fileInput.addEventListener("change", async () => {
       const correctAll = gate.failed ? [...gate.correct] : [...gate.correct, ...sc.correct];
       const incorrectAll = gate.failed ? [...gate.incorrect] : [...gate.incorrect, ...sc.incorrect];
 
-      // ÍNDICE 12: closed_eval desde cerradas
+      // ÍNDICE 12: closed_eval siempre desde cerradas
       const closed_eval = buildClosedEval(obj);
 
       // ESTADO IA: solo 2 estados
