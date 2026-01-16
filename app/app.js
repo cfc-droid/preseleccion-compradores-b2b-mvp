@@ -68,8 +68,9 @@ function canonHeader(h) {
     .trim();
 }
 
+// ✅ FIX: soporta headers exportados como "1." (Google Forms) y también "1/21."
 function headerNumber(h) {
-  const m = canonHeader(h).match(/^(\d+)\/21\./);
+  const m = canonHeader(h).match(/^(\d+)(?:\/21)?\./);
   return m ? m[1] : null;
 }
 
@@ -130,13 +131,15 @@ const Q_CERRADAS_HEADERS = [
   "21/21. La aceptación del DUV es condición obligatoria para la evaluación y eventual activación de las licencias. Si no aceptás el DUV, no se inicia el proceso."
 ];
 
+// ✅ FIX: soporta "2." o "2/21."
 function qidFromHeader33(header) {
-  const m = String(header || "").match(/^(\d+)\/21\./);
+  const m = String(header || "").match(/^(\d+)(?:\/21)?\./);
   return m ? `Q${m[1]}` : "";
 }
 
+// ✅ FIX: soporta "2." o "2/21."
 function questionTextFromHeader33(header) {
-  return String(header || "").replace(/^\d+\/21\.\s*/, "").trim();
+  return String(header || "").replace(/^\d+(?:\/21)?\.\s*/, "").trim();
 }
 
 // Gate por header (si existe)
