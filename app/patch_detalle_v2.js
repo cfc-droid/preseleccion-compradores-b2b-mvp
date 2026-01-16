@@ -61,15 +61,13 @@
   }
 
   function headerNumber(h) {
-    // ✅ CORREGIDO: ya NO hardcodea /33
-    const m = canonHeader(h).match(/^(\d+)\/\d+\./);
+    const m = canonHeader(h).match(/^(\d+)\/21\./);
     return m ? m[1] : null;
   }
 
   function questionTextFromHeader(h) {
     const s = canonHeader(h);
-    // ✅ CORREGIDO: ya NO hardcodea /33
-    return s.replace(/^\d+\/\d+\.\s*/, "");
+    return s.replace(/^\d+\/21\.\s*/, "");
   }
 
   function pctFixed(_n, total) {
@@ -132,27 +130,27 @@
   const EXPECTED_HEADERS = [
     "Marca temporal",
     "Dirección de correo electrónico",
-    "1/21. Escribí esta frase y agregá tu @usuario principal + ciudad:",
+    "1/21. Nombre y apellido del responsable institucional",
     "2/21. Cargo / rol dentro de la institución",
-    "3/21. Nombre y apellido",
-    "4/21. Email de contacto (confirmación)",
-    "5/21. WhatsApp (con código de país)",
+    "3/21. Email principal de contacto",
+    "4/21. Email usado en la compra (Hotmart)",
+    "5/21. WhatsApp (opcional, emergencias técnicas)",
     "6/21. País / zona horaria",
     "7/21. Nombre de la institución / proyecto: Nombre comercial o institucional bajo el cual opera el proyecto",
-    "8/21. Web / sitio (si aplica)",
-    "9/21. Redes principales: Pegá los links de las redes activas (Instagram, YouTube, TikTok, LinkedIn, etc.). Al menos una red es obligatoria.",
-    "10/21. Rubro / temática principal",
+    "8/21. Website o landing principal: Si no tiene web, deje este campo vacío y complete las redes sociales en la siguiente pregunta",
+    "9/21. Redes principales: Pegá los links de las redes activas (Instagram, YouTube, TikTok, LinkedIn, etc.). Al menos una red es obligatoria. Si no contás con web, este campo es obligatorio",
+    "10/21. Antiguedad del proyecto: Mes y año aproximado de inicio o exacta (ejemplo: 03/2022)",
     "11/21. Tamaño aproximado de la comunidad / alumnos",
     "12/21. ¿Qué están vendiendo actualmente?",
-    "13/21. Ticket promedio aproximado (USD o moneda local)",
-    "14/21. Modalidad actual del programa (grabado / vivo / mixto)",
+    "13/21. Link a la página de venta, temario o presentación del programa: Si no existe una página pública, podés dejarlo vacio o compartir un PDF, Notion o Google Doc.",
+    "14/21. Fecha de inicio de la cohorte o edición vigente: Fecha real o estimada (ej: 15/04/2026)",
     "15/21. Duración del programa",
     "16/21. Perfil del alumno al que está dirigido el programa",
-    "17/21. ACEPTACIÓN DE CONDICIONES - Confirmo expresamente que:",
+    "17/21. ACEPTACIÓN DE CONDICIONES  - Confirmo expresamente que:",
     "18/21. Pack adquirido",
-    "19/21. Comentarios finales",
+    "19/21. Fecha objetivo de entrega de credenciales",
     "20/21. ¿Cómo conociste el Campus CFC LITE V41?",
-    "21/21. La aceptación del DUV es condición obligatoria para la evaluación y eventual activación de las licencias."
+    "21/21. La aceptación del DUV es condición obligatoria para la evaluación y eventual activación de las licencias. Si no aceptás el DUV, no se inicia el proceso."
   ];
 
   const QID_TO_HEADER = (() => {
@@ -168,15 +166,9 @@
   // 3 PARTES (mock)
   // -------------------------
 
-  // ✅ CORREGIDO (21 preguntas):
-  // Parte 1/3 (ABIERTAS PRIORIDAD ALTA) -> 3 preguntas abiertas relevantes + 2 validaciones contacto (web/redes)
-  const Q_ABIERTAS_ALTA = ["Q1","Q8","Q9","Q16","Q19"];
-
-  // ✅ Parte 2/3 (CERRADAS / VALIDABLES) -> 13 preguntas (como venías usando)
-  const Q_CERRADAS_FIJAS = ["Q2","Q6","Q7","Q10","Q11","Q12","Q14","Q15","Q17","Q18","Q20","Q21","Q13"];
-
-  // ✅ Parte 3/3 (INFO) -> resto (8)
-  const Q_INFO = ["Q3","Q4","Q5","Q22","Q23"];
+  const Q_ABIERTAS_ALTA = ["Q8","Q9","Q10","Q13","Q14","Q19"];
+  const Q_CERRADAS_FIJAS = ["Q2","Q11","Q12","Q15","Q16","Q17","Q18","Q20","Q21"];
+  const Q_INFO = ["Q1","Q3","Q4","Q5","Q6","Q7"];
 
   // -------------------------
   // Extraer rowRaw + listas del DOM
@@ -436,7 +428,7 @@
   }
 
   // -------------------------
-  // ABIERTAS (Parte 1/3) — reglas según tu detalle
+  // ABIERTAS (Parte 1/3) — B2B
   // -------------------------
 
   function analyzeOpenAnswerByQuestion(qid, answerRaw, rowRaw, aux) {
@@ -463,78 +455,93 @@
 
     if (SPAM_RE.test(a)) ethics.push("ÉTICA: riesgo spam / sin permiso");
 
-    // Q1 (frase + @ + ciudad)
-    if (qid === "Q1") {
-      const mustPhrase = normalizeText("Entiendo que este modelo NO es un empleo y cobro solo por resultados");
-      const hasPhrase = t.includes(mustPhrase);
-      const hasAt = /@\w+/.test(a);
-      const hasCity = a.split("—").length >= 3 || a.split("-").length >= 3 || /\b(ciudad|buenos aires|caba|rosario|cordoba|mendoza|la plata|mar del plata)\b/i.test(a);
+    const hasUrl = /(https?:\/\/|www\.)/i.test(a);
+    const hasAnySocial = /(instagram|ig\.|facebook|fb\.|tiktok|youtube|linkedin|wa\.me|whatsapp|x\.com|twitter|@)/i.test(a) || hasUrl;
 
-      if (hasPhrase && hasAt && hasCity) {
-        signals.push("✔ Respuesta VÁLIDA");
-        signals.push("Contiene la frase pedida");
-        signals.push("Incluye @usuario y ciudad");
-        return { hasAnswer: true, senales: signals.join(" | "), eticas: ethics.length ? ethics.join(" | ") : "—", opinion: "VÁLIDA" };
-      }
+    const mmYYYY = /^(\d{1,2})\/(\d{4})$/;
+    const ddmmyyyy = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
 
-      signals.push("❌ Respuesta INCORRECTA");
-      if (!hasPhrase) signals.push("No escribió la frase (o está mal)");
-      if (!hasAt) signals.push("Falta @usuario");
-      if (!hasCity) signals.push("Falta ciudad");
-      return { hasAnswer: true, senales: signals.join(" | "), eticas: ethics.length ? ethics.join(" | ") : "—", opinion: "REVISAR" };
-    }
-
-    // Q8 (web)
+    // Q8 — Website/landing (opcional)
     if (qid === "Q8") {
-      const hasUrl = /(https?:\/\/|www\.)/i.test(a);
       if (hasUrl) {
         signals.push("✔ Respuesta VÁLIDA");
-        signals.push("Incluye sitio web");
+        signals.push("Incluye link web/landing");
         return { hasAnswer: true, senales: signals.join(" | "), eticas: ethics.length ? ethics.join(" | ") : "—", opinion: "VÁLIDA" };
       }
-      signals.push("❌ Respuesta INCORRECTA");
-      signals.push("No incluye URL (si aplica)");
+      signals.push("✔ Respuesta con contenido");
+      signals.push("No es link (web puede ser opcional)");
       return { hasAnswer: true, senales: signals.join(" | "), eticas: ethics.length ? ethics.join(" | ") : "—", opinion: "REVISAR" };
     }
 
-    // Q9 (redes)
+    // Q9 — Redes (obligatoria si no hay web)
     if (qid === "Q9") {
-      const hasLinkOrAt = /(https?:\/\/|www\.|@)/i.test(a);
-      const lines = countLinesNonEmpty(a);
-      if (hasLinkOrAt && (lines >= 1)) {
+      const web = String(rowRaw?.[QID_TO_HEADER["Q8"]] ?? "").trim();
+      const hasWeb = /(https?:\/\/|www\.)/i.test(web);
+
+      const enough = hasAnySocial && a.length >= 10;
+
+      if (enough) {
         signals.push("✔ Respuesta VÁLIDA");
-        signals.push("Incluye redes activas (link/@)");
+        signals.push("Incluye redes / links");
+        if (!hasWeb) signals.push("OK (no hay web → redes obligatorias)");
         return { hasAnswer: true, senales: signals.join(" | "), eticas: ethics.length ? ethics.join(" | ") : "—", opinion: "VÁLIDA" };
       }
+
       signals.push("❌ Respuesta INCORRECTA");
-      signals.push("No incluyó redes (link/@)");
+      signals.push("Faltan redes/links claros");
+      if (!hasWeb) signals.push("No hay web → este campo es obligatorio");
       return { hasAnswer: true, senales: signals.join(" | "), eticas: ethics.length ? ethics.join(" | ") : "—", opinion: "REVISAR" };
     }
 
-    // Q16 (perfil alumno)
-    if (qid === "Q16") {
-      const tooShort = a.length < 40;
-      const generic = aux ? isGeneric(a, aux.GENERIC_WORDS) : false;
-      if (!tooShort && !generic) {
+    // Q10 — Antigüedad (mm/yyyy)
+    if (qid === "Q10") {
+      const ok = mmYYYY.test(a) || /\b(19|20)\d{2}\b/.test(a);
+      if (ok) {
         signals.push("✔ Respuesta VÁLIDA");
-        signals.push("Describe perfil del alumno");
+        signals.push("Incluye fecha de inicio (formato aceptable)");
         return { hasAnswer: true, senales: signals.join(" | "), eticas: ethics.length ? ethics.join(" | ") : "—", opinion: "VÁLIDA" };
       }
       signals.push("❌ Respuesta INCORRECTA");
-      if (generic) signals.push("Texto genérico / copia-pega");
-      if (tooShort) signals.push("Muy corto / sin detalle");
+      signals.push('Esperado: mes/año (ej: "03/2022") o año claro');
       return { hasAnswer: true, senales: signals.join(" | "), eticas: ethics.length ? ethics.join(" | ") : "—", opinion: "REVISAR" };
     }
 
-    // Q19 (comentarios finales)
+    // Q13 — Link a página de venta/temario/presentación (puede ser vacío, pero si responde debe ser link o referencia clara)
+    if (qid === "Q13") {
+      const ok = hasUrl || /(pdf|notion|google|drive|docs|presentacion|temario)/i.test(a);
+      if (ok) {
+        signals.push("✔ Respuesta VÁLIDA");
+        signals.push("Aporta link o referencia (PDF/Notion/Doc)");
+        return { hasAnswer: true, senales: signals.join(" | "), eticas: ethics.length ? ethics.join(" | ") : "—", opinion: "VÁLIDA" };
+      }
+      signals.push("❌ Respuesta INCORRECTA");
+      signals.push("No parece link ni referencia concreta");
+      return { hasAnswer: true, senales: signals.join(" | "), eticas: ethics.length ? ethics.join(" | ") : "—", opinion: "REVISAR" };
+    }
+
+    // Q14 — Fecha inicio cohorte (dd/mm/yyyy o texto con fecha)
+    if (qid === "Q14") {
+      const ok = ddmmyyyy.test(a) || /\b(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\b/i.test(a) || /\b(19|20)\d{2}\b/.test(a);
+      if (ok) {
+        signals.push("✔ Respuesta VÁLIDA");
+        signals.push("Incluye fecha estimada/real");
+        return { hasAnswer: true, senales: signals.join(" | "), eticas: ethics.length ? ethics.join(" | ") : "—", opinion: "VÁLIDA" };
+      }
+      signals.push("❌ Respuesta INCORRECTA");
+      signals.push('Esperado: fecha real o estimada (ej: "15/04/2026")');
+      return { hasAnswer: true, senales: signals.join(" | "), eticas: ethics.length ? ethics.join(" | ") : "—", opinion: "REVISAR" };
+    }
+
+    // Q19 — Fecha objetivo entrega credenciales
     if (qid === "Q19") {
-      const tooShort = a.length < 20;
-      if (!tooShort) {
-        signals.push("✔ Respuesta con contenido");
-        return { hasAnswer: true, senales: signals.join(" | "), eticas: ethics.length ? ethics.join(" | ") : "—", opinion: "REVISAR" };
+      const ok = ddmmyyyy.test(a) || /\b(19|20)\d{2}\b/.test(a);
+      if (ok) {
+        signals.push("✔ Respuesta VÁLIDA");
+        signals.push("Define fecha objetivo");
+        return { hasAnswer: true, senales: signals.join(" | "), eticas: ethics.length ? ethics.join(" | ") : "—", opinion: "VÁLIDA" };
       }
       signals.push("❌ Respuesta INCORRECTA");
-      signals.push("Muy corto / sin aporte");
+      signals.push("No define una fecha clara");
       return { hasAnswer: true, senales: signals.join(" | "), eticas: ethics.length ? ethics.join(" | ") : "—", opinion: "REVISAR" };
     }
 
@@ -577,7 +584,7 @@
       if (String(v) === pctOkTxt) validas++;
     }
 
-    const unit = total ? (100 / total) : 0;
+    const unit = total > 0 ? (100 / total) : 0;
     const totalPct = Math.round((validas * unit) * 100) / 100; // 2 decimales
     const estadoDef = (totalPct >= 70) ? "APROBADO" : "NO VALIDO";
 
@@ -624,7 +631,8 @@
   // -------------------------
 
   async function renderParte13(rowRaw, rowKey) {
-    const pctFixedTxt = pctFixed(1, Q_ABIERTAS_ALTA.length);
+    const total = Q_ABIERTAS_ALTA.length;
+    const pctFixedTxt = pctFixed(1, total);
     const aux = await loadAuxOnce();
 
     const stats = computeParte13StatsFromLS(rowKey);
@@ -644,7 +652,7 @@
       const eticas = a.hasAnswer ? (a.eticas ? a.eticas : "—") : "";
       const opinion = a.hasAnswer ? a.opinion : "";
 
-      // Editables: obs + pct (solo 0 o unidad)
+      // Editables: obs + pct (solo 0 o unit)
       const obsLS = tryGetLS(lsKeyP13(rowKey, qid, "obs")) ?? "";
       const pctLS = tryGetLS(lsKeyP13(rowKey, qid, "pct")) ?? "0";
 
@@ -736,8 +744,8 @@
             <thead>
               <tr>
                 <th style="width:60px;">N°</th>
-                <th style="width:320px;">PREGUNTAS “ABIERTAS” — PRIORIDAD ALTA</th>
-                <th style="width:360px;">RESPUESTA</th>
+                <th style="width:320px;">${Q_ABIERTAS_ALTA.length} PREGUNTAS “ABIERTAS” — PRIORIDAD ALTA</th>
+                <th style="width:360px;">RESPUESTA DEL VENDEDOR</th>
                 <th style="width:260px;">SEÑALES DETECTADAS (VÁLIDA RTA)</th>
                 <th style="width:320px;">REGLAS ÉTICAS AFECTADAS (si aplica)</th>
                 <th style="width:160px;">OPINIÓN IA (NO decide)</th>
@@ -755,6 +763,7 @@
   function bindParte13Editors(root) {
     if (!root) return;
 
+    const total = Q_ABIERTAS_ALTA.length;
     const els = [...root.querySelectorAll("[data-p13-field]")];
     for (const el of els) {
       const field = el.getAttribute("data-p13-field");
@@ -765,10 +774,10 @@
       const handler = () => {
         const v = (el.tagName === "SELECT") ? String(el.value ?? "") : String(el.value ?? "");
 
-        // pct solo 0 o unidad
+        // pct solo 0 o unit
         if (field === "pct") {
           const allowedA = "0";
-          const allowedB = pctFixed(1, Q_ABIERTAS_ALTA.length);
+          const allowedB = pctFixed(1, total);
           if (v !== allowedA && v !== allowedB) {
             el.value = allowedA;
             trySetLS(k, allowedA);
@@ -801,8 +810,8 @@
 
   async function renderParte23(rowRaw) {
     const RULES = await loadRulesOnce();
-    const totalClosed = Q_CERRADAS_FIJAS.length;
-    const pct = toPctTxt(100 / totalClosed);
+    const total = Q_CERRADAS_FIJAS.length;
+    const pct = toPctTxt(100 / total);
 
     const items = Q_CERRADAS_FIJAS.map((qid, idx) => {
       const header = QID_TO_HEADER[qid];
@@ -822,10 +831,10 @@
     });
 
     const validas = items.filter(x => x.isOk).length;
-    const incorrectas = totalClosed - validas;
+    const incorrectas = total - validas;
 
-    const pctValid = totalClosed ? Math.round((validas / totalClosed) * 100) : 0;
-    const pctInc = totalClosed ? Math.round((incorrectas / totalClosed) * 100) : 0;
+    const pctValid = total ? Math.round((validas / total) * 100) : 0;
+    const pctInc = total ? Math.round((incorrectas / total) * 100) : 0;
 
     const estadoResumen = (pctValid >= 70) ? "REVISAR_AUTO" : "DESCARTADO_AUTO";
 
@@ -843,7 +852,7 @@
 
     return `
       <div class="miniCard" style="margin-top:14px;">
-        <div class="sectionTitle">PARTE 2/3 — PREGUNTAS Y RESPUESTAS (CERRADAS) — FIJO (${totalClosed} preguntas)</div>
+        <div class="sectionTitle">PARTE 2/3 — PREGUNTAS Y RESPUESTAS (CERRADAS) — FIJO (${total} preguntas)</div>
 
         <div style="overflow:auto; margin-top:10px;">
           <table class="table">
@@ -856,7 +865,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td><b>TOTAL DE PREGUNTAS</b></td><td>${totalClosed}</td><td>100%</td><td>—</td></tr>
+              <tr><td><b>TOTAL DE PREGUNTAS</b></td><td>${total}</td><td>100%</td><td>—</td></tr>
               <tr><td><b>RESPUESTAS VÁLIDAS</b></td><td>${validas}</td><td>${pctValid}%</td><td><b>${esc(estadoResumen)}</b></td></tr>
               <tr><td><b>RESPUESTAS INCORRECTAS</b></td><td>${incorrectas}</td><td>${pctInc}%</td><td>—</td></tr>
             </tbody>
@@ -868,7 +877,7 @@
         </div>
 
         <div style="margin-top:14px;">
-          <div class="sectionTitle">RESPUESTAS — DETALLE (${totalClosed} filas fijas)</div>
+          <div class="sectionTitle">RESPUESTAS — DETALLE (${total} filas fijas)</div>
           <div style="overflow:auto; margin-top:10px;">
             <table class="table">
               <thead>
@@ -877,7 +886,7 @@
                   <th style="width:80px;">Q</th>
                   <th style="width:280px;">PREGUNTA</th>
                   <th style="width:110px;">PUNTAJE</th>
-                  <th style="width:240px;">RESPUESTA</th>
+                  <th style="width:240px;">RESPUESTA DEL VENDEDOR</th>
                   <th style="width:360px;">JUSTIFICACIÓN “CERRADA” — RESPUESTA DE LA IA</th>
                   <th style="width:120px;">PORCENTAJE</th>
                 </tr>
@@ -918,8 +927,8 @@
             <thead>
               <tr>
                 <th style="width:60px;">N°</th>
-                <th style="width:360px;">PREGUNTAS “ABIERTAS” — PRIORIDAD BAJA</th>
-                <th style="width:520px;">RESPUESTA</th>
+                <th style="width:360px;">${Q_INFO.length} PREGUNTAS “ABIERTAS” — PRIORIDAD BAJA</th>
+                <th style="width:520px;">RESPUESTA DEL VENDEDOR</th>
               </tr>
             </thead>
             <tbody>${rows}</tbody>
